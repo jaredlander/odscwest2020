@@ -286,4 +286,38 @@ flow5
 val5 <- fit_resamples(flow5, resamples=val_split, metrics=loss_fn)
 val5 %>% collect_metrics()
 val4 %>% collect_metrics()
+val5
+val5$.notes
 
+# Imbalanced Data
+
+rec3 <- recipe(Status ~ ., data=train) %>% 
+    step_nzv(all_predictors()) %>% 
+    step_other(all_nominal(), -Status, other='Misc') %>% 
+    step_dummy(all_nominal(), -Status, one_hot=TRUE)
+rec3
+
+flow6 <- flow5 %>% 
+    update_recipe(rec3)
+
+val6 <- fit_resamples(flow6, resamples=val_split, metrics=loss_fn)
+val5 %>% collect_metrics()
+val6 %>% collect_metrics()
+
+table(train$Status)
+1004/2561
+
+scaler <- train %>% count(Status) %>% pull(n) %>% purrr::reduce(`/`)
+
+xg_spec5 <- boost_tree('classification', trees=300, learn_rate=0.2, sample_size=0.5) %>% 
+    set_engine('xgboost', scale_pos_weight=!!(1/scaler))
+xg_spec5
+
+flow7 <- flow6 %>% 
+    update_model(xg_spec5)
+flow7
+
+val7 <- fit_resamples(flow7, resamples=val_split, metrics=loss_fn)
+val7 %>% collect_metrics()
+val6 %>% collect_metrics()
+val5 %>% collect_metrics()
