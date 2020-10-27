@@ -146,6 +146,9 @@ rand_forest() %>% set_engine('ranger')
 
 rec1 %>% prep()
 
+rec_prep <- rec1 %>% prep()
+bake(rec_prep, new_data=NULL)
+bake(rec_prep, new_data=test)
 prepped <- rec1 %>% prep() %>% bake(new_data=NULL)
 prepped
 
@@ -161,4 +164,12 @@ flow1 <- workflow() %>%
     add_model(xg_spec1)
 flow1
 
+# Fit Our Model
 
+fit1 <- fit(flow1, data=train)
+fit1
+fit1 %>% class()
+
+fit1 %>% extract_model() %>% class()
+fit1 %>% extract_model() %>% vip()
+fit1 %>% extract_model() %>% xgboost::xgb.plot.multi.trees()
