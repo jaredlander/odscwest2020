@@ -46,3 +46,19 @@ ggplot(credit_data, aes(x=Age, y=Income, color=Status)) + geom_point()
 ggplot(credit_data, aes(x=Age, y=Income, color=Status)) + 
     geom_hex() + 
     facet_wrap(~Status) + theme(legend.position='none')
+
+# Split Data ####
+
+set.seed(871)
+
+# from rsample
+credit_split <- initial_split(credit_data, prop=0.8, strata='Status')
+credit_split
+credit_split %>% class()
+
+train <- training(credit_split)
+test <- testing(credit_split)
+
+train
+train %>% glimpse()
+train %>% class()
