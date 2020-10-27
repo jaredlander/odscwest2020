@@ -178,7 +178,7 @@ fit1 %>% extract_model() %>% xgboost::xgb.plot.multi.trees()
 # readr::write_rds(fit1, 'fit1.rds')
 # xgboost::xgb.save(fit1 %>% extract_model(), fname='xg1.model')
 
-# How did we Do?
+# How did we Do? ####
 
 # accuracy, logloss, AUC
 
@@ -222,3 +222,14 @@ cv_split$splits[[1]]
 vfold_cv(data=train, v=10, strata='Status', repeats=3)
 cv_split <- vfold_cv(data=train, v=5, strata='Status', repeats=2)
 cv_split
+
+val1 <- fit_resamples(object=flow1, resamples=val_split, metrics=loss_fn)
+cv1 <- fit_resamples(object=flow1, resamples=cv_split, metrics=loss_fn)
+
+cv1
+cv1$.metrics[[1]]
+cv1$.metrics[[2]]
+cv1$.metrics[[3]]
+
+cv1 %>% collect_metrics()
+
