@@ -1,6 +1,6 @@
 # make sure all packages are installed
 install.packages(c(
-    'tidyverse', 'tidymodels', 'ggplot2', 'vip',
+    'tidyverse', 'tidymodels', 'ggplot2', 'vip', 'themis',
     'coefplot', 'ggridges',
     'ggthemes',
     'feasts', 'tsibble', 'fable', 'fpp3', 'dygraphs', 'timetk',
@@ -12,7 +12,9 @@ install.packages(c(
     'devtools',
     'future', 
     'piggyback',
-    'parallel', 'doFuture', 'tictoc'
+    'plumber',
+    'parallel', 'doFuture', 'tictoc',
+    'skimr', 'animation'
 ))
 
 # download all data
