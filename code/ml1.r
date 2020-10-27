@@ -207,3 +207,18 @@ val1 <- fit_resamples(object=flow1, resamples=val_split, metrics=loss_fn)
 
 val1
 val1 %>% collect_metrics()
+val1$.metrics
+
+library(animation)
+cv.ani(k=10)
+
+# from rsample
+cv_split <- vfold_cv(data=train, v=10, strata='Status')
+cv_split
+cv_split %>% class()
+val_split %>% class()
+cv_split$splits[[1]]
+
+vfold_cv(data=train, v=10, strata='Status', repeats=3)
+cv_split <- vfold_cv(data=train, v=5, strata='Status', repeats=2)
+cv_split
