@@ -478,3 +478,23 @@ test
 
 results10 <- last_fit(mod10, split=credit_split, metrics=loss_fn)
 results10 %>% collect_metrics()
+
+# Make Predictions ####
+
+# fit the model on ALL the data
+# predict on some new data (pretend 'test' is new)
+
+fit10 <- fit(mod10, data=credit_data)
+
+fit10 %>% extract_model() %>% vip()
+
+# pretend 'test' is new
+preds10 <- predict(fit10, new_data=test)
+preds10
+
+# fit is for fitting one model with set parameters
+# fit_resamples is for fitting multiple models for validation with set parameters
+# tune_grid is for tuning over tuning parameters
+
+preds10_prob <- predict(fit10, new_data=test, type='prob')
+preds10_prob
