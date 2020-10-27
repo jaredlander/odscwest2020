@@ -321,3 +321,66 @@ val7 <- fit_resamples(flow7, resamples=val_split, metrics=loss_fn)
 val7 %>% collect_metrics()
 val6 %>% collect_metrics()
 val5 %>% collect_metrics()
+
+# Tune Parameters ####
+
+# from tune
+
+xg_spec6 <- boost_tree('classification', learn_rate=0.2, sample_size=0.5, trees=tune()) %>% 
+    set_engine('xgboost', scale_pos_weight=!!(1/scaler))
+xg_spec6
+
+flow8 <- flow7 %>% 
+    update_model(xg_spec6)
+flow8
+
+# does not work
+# fit8 <- fit(flow8, data=train)
+
+# does not work
+val8 <- fit_resamples(flow8, resamples=val_split, metrics=loss_fn)
+val8$.notes
+
+# benefits and draw backs of validate vs cross-validate
+
+# from doFuture and parallel
+registerDoFuture()
+cl <- makeCluster(6)
+plan(cluster, workers=cl)
+
+options(tidymodels.dark=TRUE)
+# from tictoc
+tic()
+# tune
+tune8_val <- tune_grid(
+    flow8,
+    resamples=val_split,
+    grid=20,
+    metrics=loss_fn,
+    control=control_grid(verbose=TRUE, allow_par=TRUE)
+)
+toc()
+
+tune8_val
+tune8_val$.notes
+tune8_val$.metrics
+tune8_val %>% collect_metrics()
+
+tune8_val %>% show_best(metric='roc_auc')
+
+tic()
+tune8_cv <- tune_grid(
+    flow8,
+    resamples=cv_split,
+    grid=20,
+    metrics=loss_fn,
+    control=control_grid(verbose=TRUE, allow_par=TRUE)
+)
+toc()
+
+tune8_cv
+tune8_cv$.metrics[[1]]$trees %>% unique
+
+tune8_cv %>% collect_metrics()
+tune8_cv %>% autoplot()
+tune8_cv %>% show_best(metric='roc_auc')
