@@ -167,9 +167,43 @@ flow1
 # Fit Our Model
 
 fit1 <- fit(flow1, data=train)
+# fit1 <- fit(flow1, data=train2)
 fit1
 fit1 %>% class()
 
 fit1 %>% extract_model() %>% class()
 fit1 %>% extract_model() %>% vip()
 fit1 %>% extract_model() %>% xgboost::xgb.plot.multi.trees()
+
+# readr::write_rds(fit1, 'fit1.rds')
+# xgboost::xgb.save(fit1 %>% extract_model(), fname='xg1.model')
+
+# How did we Do?
+
+# accuracy, logloss, AUC
+
+# from yardstick
+
+loss_fn <- metric_set(accuracy, mn_log_loss, roc_auc)
+loss_fn
+
+# train and validation sets
+# cross-validation
+
+# from rsample
+val_split <- validation_split(data=train, prop=0.8, strata='Status')
+val_split
+val_split$splits[[1]]
+
+credit_split
+
+credit_split %>% class()
+val_split$splits[[1]] %>% class()
+
+val_split %>% class()
+
+# from tune
+val1 <- fit_resamples(object=flow1, resamples=val_split, metrics=loss_fn)
+
+val1
+val1 %>% collect_metrics()
