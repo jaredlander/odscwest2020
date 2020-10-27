@@ -141,3 +141,24 @@ linear_reg() %>% set_engine('spark')
 
 rand_forest() %>% set_engine('randomForest')
 rand_forest() %>% set_engine('ranger')
+
+# Build Workflow ####
+
+rec1 %>% prep()
+
+prepped <- rec1 %>% prep() %>% bake(new_data=NULL)
+prepped
+
+fit0 <- fit(xg_spec1, Status ~ ., data=prepped)
+fit0
+
+# from workflows
+
+# combine featuring engineering and model specification into one step
+
+flow1 <- workflow() %>% 
+    add_recipe(rec1) %>% 
+    add_model(xg_spec1)
+flow1
+
+
