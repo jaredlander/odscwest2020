@@ -384,3 +384,97 @@ tune8_cv$.metrics[[1]]$trees %>% unique
 tune8_cv %>% collect_metrics()
 tune8_cv %>% autoplot()
 tune8_cv %>% show_best(metric='roc_auc')
+
+# Other Tuning Parameters ####
+
+xg_spec7 <- boost_tree(
+    'classification',
+    trees=tune(), learn_rate=0.2, sample_size=tune(), tree_depth=tune()
+) %>% 
+    set_engine('xgboost', scale_pos_weight=!!(1/scaler))
+xg_spec7
+
+flow9 <- flow8 %>% 
+    update_model(xg_spec7)
+flow9
+
+flow9 %>% parameters()
+flow9 %>% parameters() %>% class()
+flow9 %>% parameters() %>% pull(object)
+
+# from dials
+trees()
+trees(range=c(10, 300))
+
+tree_depth()
+tree_depth(range=c(2, 8))
+
+sample_size()
+# sample_size(range=c(0.3, 0.8))
+sample_prop()
+sample_prop(c(0.3, 0.8))
+
+params9 <- flow9 %>% 
+    parameters() %>% 
+    update(
+        trees=trees(range=c(10, 300)),
+        tree_depth=tree_depth(range=c(2, 8)),
+        sample_size=sample_prop(range=c(0.3, 0.8))
+    )
+params9
+params9 %>% pull(object)
+
+tic()
+val9 <- tune_grid(
+    flow9,
+    resamples=val_split,
+    grid=40,
+    metrics=loss_fn,
+    control=control_grid(verbose=TRUE, allow_par=TRUE),
+    param_info=params9
+)
+toc()
+val9
+
+val9 %>% show_best(metric='roc_auc')
+val9 %>% autoplot(metric='roc_auc')
+
+
+grid10 <- grid_max_entropy(params9, size=40)
+grid10
+
+tic()
+val10 <- tune_grid(
+    flow9,
+    resamples=val_split, # or cv_split
+    grid=grid10, 
+    metrics=loss_fn,
+    control=control_grid(verbose=TRUE, allow_par=FALSE)
+)
+toc()
+
+val10 %>% collect_metrics()
+val10 %>% show_best(metric='roc_auc', n=10)
+
+val10 %>% select_best(metric='roc_auc')
+
+boost_tree('classification', trees=127, tree_depth=2, sample_size=0.509)
+
+# Finalize Model ####
+
+mod10 <- flow9 %>% 
+    finalize_workflow(val10 %>% select_best(metric='roc_auc'))
+flow9
+mod10
+
+val10.1 <- fit_resamples(mod10, resamples=val_split, metrics=loss_fn)
+val10.1 %>% collect_metrics()
+val10 %>% show_best()
+val10.1 %>% collect_metrics()
+
+test
+
+# Last Fit ####
+
+results10 <- last_fit(mod10, split=credit_split, metrics=loss_fn)
+results10 %>% collect_metrics()
