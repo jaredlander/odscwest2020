@@ -88,6 +88,12 @@ colors2 <- c('blue', 'blue', 'red', 'green', 'blue', 'green', 'blue', 'blue', 'b
             'red', 'green', 'Misc', 'Misc', 'Misc', 'Misc')
 model.matrix(~colors2)
 
+cat_train_1 <- c('rent', 'own', 'mortgage')
+cat_test_1 <- c('rent', 'parents')
+
+cat_train_2 <- c('rent', 'own', 'mortgage')
+cat_test_2 <- c('rent', 'own')
+
 rec1 <- recipe(Status ~ ., data=train) %>% 
     # xgboost can handle this, so we'll remove it later
     step_downsample(Status, under_ratio=1.2) %>% 
@@ -104,3 +110,34 @@ rec1 <- recipe(Status ~ ., data=train) %>%
     step_knnimpute(all_numeric()) %>% 
     step_dummy(all_nominal(), -Status, one_hot=TRUE)
 rec1
+
+# Model Specification ####
+
+# from parsnip
+
+xg_spec1 <- boost_tree(mode='classification') %>% 
+    set_engine('xgboost')
+
+xg_spec1
+
+boost_tree(mode='classification') %>% set_engine('C5.0')
+boost_tree(mode='classification') %>% set_engine('spark')
+
+# BART: dbart
+# catboost
+# LightGBM
+
+xg_spec1 <- boost_tree(mode='classification', trees=100) %>% 
+    set_engine('xgboost')
+xg_spec1
+
+# gives us a uniform naming convention for all of the parameters
+
+linear_reg() %>% set_engine('lm')
+linear_reg(penalty=0.826) %>% set_engine('glmnet')
+linear_reg() %>% set_engine('keras')
+linear_reg() %>% set_engine('stan')
+linear_reg() %>% set_engine('spark')
+
+rand_forest() %>% set_engine('randomForest')
+rand_forest() %>% set_engine('ranger')
