@@ -208,3 +208,77 @@ snaive_cv %>% forecast(h=1)
 snaive_cv %>% forecast(h=10)
 
 snaive_cv %>% forecast(h=1) %>% accuracy(elec)
+
+# STL Decomposition ####
+
+# Seasonality, Trend, L
+
+elec %>% 
+    model(
+        STL(ActivePower ~ trend(window=7), robust=TRUE)
+    ) %>% 
+    components() %>% 
+    autoplot()
+
+# ETS
+
+# Error, Trend, Seasonality
+
+ets_mod <- elec %>% 
+    model(
+        ann=ETS(ActivePower ~ error('A') + trend('N') + season('N'))
+        , aan=ETS(ActivePower ~ error('A') + trend('A') + season('N'))
+        , aaa=ETS(ActivePower ~ error('A') + trend('A') + season('A'))
+    )
+ets_mod
+
+ets_mod %>% 
+    forecast(h=30) %>% 
+    autoplot(elec %>% filter_index('2010-10' ~ .), level=NULL)
+
+# error, trend, seasonality
+# additive, multiplicative, none
+# 27 combinations
+
+ets_auto <- elec %>% 
+    model(auto=ETS(ActivePower))
+ets_auto
+ets_auto %>% 
+    forecast(h=30) %>% 
+    autoplot(elec %>% filter_index('2010-10' ~ .), level=NULL)
+
+# AICc ####
+
+# AIC corrected
+
+# Stationarity ####
+
+# no predictable long term trends
+# no seasonality or trend (cycles are ok)
+# mostly flat plot
+
+elec %>% autoplot()
+
+# Differencing ####
+
+elec %>% ACF(ActivePower) %>% autoplot()
+
+elec_diff <- elec %>% 
+    mutate(
+        PowerDiff=difference(ActivePower)
+        , PowerDiff2=difference(ActivePower, differences=2)
+    )
+elec_diff
+
+elec_diff %>% 
+    ACF(PowerDiff) %>% 
+    autoplot()
+
+elec_diff %>% 
+    ACF(PowerDiff2) %>% 
+    autoplot()
+
+elec_diff %>% 
+    autoplot(ActivePower) + 
+    autolayer(elec_diff, PowerDiff, color='green') + 
+    autolayer(elec_diff, PowerDiff2, color='blue')
