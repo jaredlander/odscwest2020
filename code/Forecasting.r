@@ -331,3 +331,59 @@ arima_mod_3 %>% gg_tsresiduals()
 
 # Dynamic Regression ####
 
+gdp <- readr::read_csv('data/gdp_us.csv')
+gdp
+
+gdp <- gdp %>% 
+    rename(gdp=USALORSGPNOSTSAM) %>% 
+    mutate(Date=yearmonth(DATE)) %>% 
+    as_tsibble(index=Date) %>% 
+    filter_index('2000' ~ .)
+gdp
+
+gdp %>% autoplot(gdp)
+
+gdp %>% tail
+
+gdp <- gdp %>% 
+    mutate(pandemic=if_else(DATE >= lubridate::ymd('2020-03-01'), 1, 0))
+gdp
+gdp %>% tail
+
+gdp_mod <- gdp %>% 
+    model(
+        arima=ARIMA(gdp)
+        , arima_dyn=ARIMA(gdp ~ pandemic)
+    )
+gdp_mod
+
+gdp_mod %>% 
+    select(arima) %>% 
+    forecast(h=6) %>% 
+    autoplot(gdp)
+
+next_6_pandemic <- new_data(gdp, n=6) %>% 
+    mutate(pandemic=1)
+next_6_pandemic
+
+next_6_normal <- new_data(gdp, n=6) %>% 
+    mutate(pandemic=0)
+next_6_normal
+
+gdp_mod %>% 
+    select(arima_dyn) %>% 
+    forecast(new_data=next_6_pandemic)
+
+gdp_mod %>% 
+    select(arima_dyn) %>% 
+    forecast(new_data=next_6_normal)
+
+gdp_mod %>% 
+    select(arima_dyn) %>% 
+    forecast(new_data=next_6_pandemic) %>% 
+    autoplot(gdp)
+
+gdp_mod %>% 
+    select(arima_dyn) %>% 
+    forecast(new_data=next_6_normal) %>% 
+    autoplot(gdp)
