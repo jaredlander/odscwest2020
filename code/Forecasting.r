@@ -93,3 +93,41 @@ naive_mod %>% forecast(h=90) %>% autoplot(elec)
 snaive_mod <- elec %>% 
     model(SNaive=SNAIVE(ActivePower ~ lag('month') + lag('year') + lag('week')))
 snaive_mod %>% forecast(h=90) %>% autoplot(elec)
+
+# Compare Models ####
+
+simple_mods <- elec %>% 
+    model(
+        Mean=MEAN(ActivePower)
+        , Naive=NAIVE(ActivePower)
+        , SNaive=SNAIVE(ActivePower ~ lag('year'))
+    )
+simple_mods
+
+simple_mods %>% forecast(h=90)
+simple_mods %>% forecast(h=90) %>% tail()
+simple_mods %>% forecast(h=90) %>% print(n=250)
+
+simple_mods %>% forecast(h=90) %>% autoplot(elec, level=NULL)
+simple_mods %>% forecast(h=90) %>% autoplot(elec)
+
+# Transformations ####
+
+# Log
+
+elec %>% autoplot(ActivePower)
+elec %>% autoplot(log(ActivePower))
+
+# Box-Cox
+
+elec %>% autoplot(box_cox(ActivePower, lambda=1.7))
+elec %>% autoplot(box_cox(ActivePower, lambda=0.7))
+elec %>% autoplot(box_cox(ActivePower, lambda=0.07))
+
+# from feasts
+best_lambda <- elec %>% 
+    features(ActivePower, features=guerrero) %>% 
+    pull(lambda_guerrero)
+best_lambda
+
+elec %>% autoplot(box_cox(ActivePower, lambda=best_lambda))
