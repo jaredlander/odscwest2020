@@ -131,3 +131,17 @@ best_lambda <- elec %>%
 best_lambda
 
 elec %>% autoplot(box_cox(ActivePower, lambda=best_lambda))
+
+# Fitted Values and Residuals ####
+
+# from broom
+augment(mean_mod)
+augment(simple_mods)
+
+
+# Prediction Intervals ####
+
+snaive_mod %>% forecast(h=10)
+snaive_mod %>% forecast(h=10) %>% hilo()
+
+simple_mods %>% forecast(h=10) %>% hilo()
