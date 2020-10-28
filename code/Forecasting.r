@@ -189,3 +189,22 @@ train_forecast %>%
     facet_wrap(~.model, ncol=1)
 
 accuracy(train_forecast, test)
+accuracy(train_forecast, test) %>% 
+    slice_min(RMSE) %>% 
+    pull(.model)
+
+elect_tr_cv <- elec %>% 
+    stretch_tsibble(.step=1, .init=1200)
+elect_tr_cv
+
+table(elect_tr_cv$.id) %>% length
+
+snaive_cv <- elect_tr_cv %>% 
+    model(
+        SNaive=SNAIVE(ActivePower ~ lag('year'))
+    )
+snaive_cv
+snaive_cv %>% forecast(h=1)
+snaive_cv %>% forecast(h=10)
+
+snaive_cv %>% forecast(h=1) %>% accuracy(elec)
