@@ -24,7 +24,8 @@ function(x, y)
     return(as.numeric(x) + as.numeric(y))
 }
 
-the_mod <- readr::read_rds(here::here('code', 'mod0.rds'))
+# the_mod <- readr::read_rds(here::here('code', 'mod0.rds'))
+the_mod <- readr::read_rds('mod0.rds')
 
 library(workflows)
 
@@ -48,6 +49,17 @@ function(Income, Seniority, Records, Amount, Job)
     return(
         list(
             predicted_status=predict(the_mod, new_data=the_data, type='prob')
+        )
+    )
+}
+
+#* Predict with data in body, expects to get a row of JSON
+#* @get /predict2
+function(req)
+{
+    return(
+        list(
+            predicted_status=predict(the_mod, new_data=req$body, type='prob')
         )
     )
 }

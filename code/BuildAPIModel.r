@@ -37,3 +37,6 @@ readr::write_rds(mod0, file='code/mod0.rds')
 
 loaded_mod <- readr::read_rds(file='code/mod0.rds')
 loaded_mod %>% extract_model() %>% vip::vip()
+
+data.frame(Income=156, Seniority=5, Records='yes', Amount=4500, Job='fixed') %>% 
+    jsonlite::write_json(x=., path='one_row.json')
