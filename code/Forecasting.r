@@ -145,3 +145,47 @@ snaive_mod %>% forecast(h=10)
 snaive_mod %>% forecast(h=10) %>% hilo()
 
 simple_mods %>% forecast(h=10) %>% hilo()
+
+
+# Evaluate Model ####
+
+mean_augment <- mean_mod %>% augment()
+mean_augment
+
+mean_augment %>% autoplot(.resid)
+mean_augment %>% 
+    ggplot(aes(x=.resid)) + 
+    geom_histogram()
+mean_augment %>% 
+    ACF(.resid) %>% 
+    autoplot()
+
+mean_mod %>% gg_tsresiduals()
+snaive_mod %>% gg_tsresiduals()
+
+train <- elec %>% 
+    filter_index(. ~ '2010-08-31')
+train %>% tail
+test <- elec %>% 
+    filter_index('2010-09-01' ~ .)
+test
+
+train_mods <- train %>% 
+    model(
+        Mean=MEAN(ActivePower)
+        , SNaive=SNAIVE(ActivePower ~ lag('year'))
+    )
+train_mods
+
+train_mods %>% forecast(h=nrow(test))
+train_mods %>% forecast(new_data=test)
+
+train_forecast <- train_mods %>% 
+    forecast(new_data=test)
+
+train_forecast %>% 
+    autoplot(train, level=NULL) + 
+    autolayer(test) + 
+    facet_wrap(~.model, ncol=1)
+
+accuracy(train_forecast, test)
