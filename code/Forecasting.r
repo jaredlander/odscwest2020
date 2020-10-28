@@ -282,3 +282,52 @@ elec_diff %>%
     autoplot(ActivePower) + 
     autolayer(elec_diff, PowerDiff, color='green') + 
     autolayer(elec_diff, PowerDiff2, color='blue')
+
+elec %>% mutate(PowerLag2=difference(ActivePower, lag=2))
+
+# Autoregressive Models ####
+
+arima_323 <- elec %>% 
+    model(
+        ARIMA(ActivePower ~ pdq(3, 2, 3) + PDQ(0, 0, 0))
+    )
+
+arima_323 %>% 
+    forecast(h=30) %>% 
+    autoplot(elec)
+
+arima_212_100 <- elec %>% 
+    model(
+        ARIMA(ActivePower ~ pdq(2,1,2) + PDQ(1,0,0))
+    )
+
+arima_212_100 %>% 
+    forecast(h=30) %>% 
+    autoplot(elec)
+
+arima_mod <- elec %>% 
+    model(
+        ARIMA(ActivePower)
+    )
+arima_mod
+arima_mod[1][[1]][[1]]
+arima_mod %>% report()
+
+arima_mod_2 <- elec %>% 
+    model(
+        ARIMA(ActivePower ~ pdq(1:4, 1:2, 1:4))
+    )
+arima_mod_2 %>% report()
+
+
+arima_mod_3 <- elec %>% 
+    model(
+        ARIMA(ActivePower ~ pdq(1:4, 1:2, 1:4), 
+              stepwise=FALSE, approximation=FALSE, greedy=FALSE)
+    )
+arima_mod_3 %>% report()
+
+arima_mod_3 %>% gg_tsresiduals()
+
+# Dynamic Regression ####
+
